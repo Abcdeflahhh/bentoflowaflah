@@ -1,69 +1,354 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+
+import { BentoCard, BentoProfile, ThemeId } from "@/types/bento";
+import { THEMES } from "@/lib/themes";
+import { INITIAL_PROFILE } from "@/lib/initial-data";
+import { SortableCard } from "@/components/sortable-card";
+import { BentoCardView } from "@/components/bento-card-view";
+import { CardModal } from "@/components/card-modal";
+import { AICopilotBar } from "@/components/ai-copilot-bar";
+import { GithubIcon, LinkedinIcon } from "@/components/icons";
+
+import {
+  Plus,
+  Share2,
+  Eye,
+  Edit3,
+  Palette,
+  Check,
+  Mail,
+  Sparkles,
+  MapPin,
+  Laptop,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export default function BentoFlowPage() {
+  const [profile, setProfile] = useState<BentoProfile>(INITIAL_PROFILE);
+  const [isEditorMode, setIsEditorMode] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCard, setEditingCard] = useState<BentoCard | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const currentTheme = THEMES[profile.theme] || THEMES["dark-minimal"];
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setProfile((prev) => {
+        const oldIndex = prev.cards.findIndex((c) => c.id === active.id);
+        const newIndex = prev.cards.findIndex((c) => c.id === over.id);
+        return {
+          ...prev,
+          cards: arrayMove(prev.cards, oldIndex, newIndex),
+        };
+      });
+    }
+  };
+
+  const handleSaveCard = (card: BentoCard) => {
+    setProfile((prev) => {
+      const exists = prev.cards.some((c) => c.id === card.id);
+      if (exists) {
+        return {
+          ...prev,
+          cards: prev.cards.map((c) => (c.id === card.id ? card : c)),
+        };
+      }
+      return {
+        ...prev,
+        cards: [card, ...prev.cards],
+      };
+    });
+  };
+
+  const handleDeleteCard = (id: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      cards: prev.cards.filter((c) => c.id !== id),
+    }));
+  };
+
+  const handleApplyAI = (data: Partial<BentoProfile> & { newCards?: BentoCard[] }) => {
+    setProfile((prev) => ({
+      ...prev,
+      theme: data.theme || prev.theme,
+      headline: data.headline || prev.headline,
+      bio: data.bio || prev.bio,
+      cards: data.newCards ? [...data.newCards, ...prev.cards] : prev.cards,
+    }));
+  };
+
+  const handleCopyLink = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div
+      className={cn(
+        "min-h-screen transition-colors duration-500 font-sans selection:bg-purple-500 selection:text-white",
+        currentTheme.background
+      )}
+    >
+      {/* Top Navbar */}
+      <header className="sticky top-0 z-40 w-full backdrop-blur-xl border-b border-white/10 bg-black/20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-purple-500/25">
+              <Laptop className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="font-extrabold tracking-tight text-lg">BentoFlow</span>
+              <span className="ml-2 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                v1.0 Vibe-Coded
+              </span>
+            </div>
+          </div>
+
+          {/* Action Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mode Switcher */}
+            <button
+              onClick={() => setIsEditorMode(!isEditorMode)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/15 transition-all"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              {isEditorMode ? (
+                <>
+                  <Eye className="w-4 h-4 text-cyan-400" />
+                  <span>Preview Publik</span>
+                </>
+              ) : (
+                <>
+                  <Edit3 className="w-4 h-4 text-yellow-400" />
+                  <span>Mode Editor</span>
+                </>
+              )}
+            </button>
+
+            {/* Share / Copy Button */}
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/15 transition-all"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              {copiedLink ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>Disalin!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Bagikan</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+
+      {/* Main Content Container */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+        {/* Editor Controls Bar (Only in Editor Mode) */}
+        {isEditorMode && (
+          <div className="space-y-4 animate-in fade-in duration-300">
+            {/* AI Copilot Bar */}
+            <AICopilotBar onApplyAIChanges={handleApplyAI} />
+
+            {/* Sub-toolbar: Themes & Add Card */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+              {/* Theme Picker */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                <Palette className="w-4 h-4 text-zinc-400 shrink-0 mr-1" />
+                <span className="text-xs text-zinc-400 shrink-0 mr-1">Tema:</span>
+                {(Object.keys(THEMES) as ThemeId[]).map((tId) => (
+                  <button
+                    key={tId}
+                    onClick={() => setProfile((p) => ({ ...p, theme: tId }))}
+                    className={cn(
+                      "px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all border",
+                      profile.theme === tId
+                        ? "bg-white text-black border-white shadow-md"
+                        : "bg-white/5 hover:bg-white/10 text-zinc-300 border-white/5"
+                    )}
+                  >
+                    {THEMES[tId].name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Add Card Button */}
+              <button
+                onClick={() => {
+                  setEditingCard(null);
+                  setIsModalOpen(true);
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white text-black hover:bg-zinc-200 font-semibold text-xs sm:text-sm transition-all shadow-md shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Bento Card</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Profile Header Card */}
+        <section className="relative p-6 sm:p-8 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 relative z-10">
+            {/* Avatar with Glow */}
+            <div className="relative group shrink-0">
+              <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-purple-600 to-cyan-500 opacity-60 blur-md group-hover:opacity-100 transition-opacity" />
+              <img
+                src={profile.avatarUrl}
+                alt={profile.name}
+                className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-white/20"
+              />
+            </div>
+
+            {/* Profile Info */}
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                  {profile.name}
+                </h1>
+                <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  Tersedia untuk Magang MSIB
+                </span>
+              </div>
+
+              <p className={cn("text-sm sm:text-base font-medium", currentTheme.textSecondary)}>
+                {profile.headline}
+              </p>
+
+              <p className={cn("text-xs sm:text-sm max-w-2xl leading-relaxed", currentTheme.textSecondary)}>
+                {profile.bio}
+              </p>
+
+              <div className="flex items-center gap-4 pt-2 text-xs text-zinc-400 flex-wrap">
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {profile.location}
+                </span>
+                <a
+                  href={profile.socialLinks.github}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-white flex items-center gap-1 transition-colors"
+                >
+                  <GithubIcon className="w-3.5 h-3.5" /> GitHub
+                </a>
+                <a
+                  href={profile.socialLinks.linkedin}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-white flex items-center gap-1 transition-colors"
+                >
+                  <LinkedinIcon className="w-3.5 h-3.5" /> LinkedIn
+                </a>
+                <a
+                  href={`mailto:${profile.socialLinks.email}`}
+                  className="hover:text-white flex items-center gap-1 transition-colors"
+                >
+                  <Mail className="w-3.5 h-3.5" /> Email
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Bento Grid Canvas */}
+        <section>
+          {isEditorMode ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={profile.cards.map((c) => c.id)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[minmax(170px,auto)]">
+                  {profile.cards.map((card) => (
+                    <SortableCard
+                      key={card.id}
+                      card={card}
+                      theme={currentTheme}
+                      onEdit={(c) => {
+                        setEditingCard(c);
+                        setIsModalOpen(true);
+                      }}
+                      onDelete={handleDeleteCard}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[minmax(170px,auto)]">
+              {profile.cards.map((card) => (
+                <BentoCardView
+                  key={card.id}
+                  card={card}
+                  theme={currentTheme}
+                  isEditable={false}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       </main>
+
+      {/* Footer */}
+      <footer className="mt-16 py-8 border-t border-white/10 text-center text-xs text-zinc-500 space-y-2">
+        <p>BentoFlow — Dibangun oleh Mahasiswa Semester 5 Teknik Informatika.</p>
+        <p className="opacity-75">
+          Tech Stack: Next.js 15, TypeScript, Tailwind CSS, Framer Motion, dnd-kit & AI Copilot.
+        </p>
+      </footer>
+
+      {/* Card Modal */}
+      <CardModal
+        isOpen={isModalOpen}
+        initialCard={editingCard}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingCard(null);
+        }}
+        onSave={handleSaveCard}
+      />
     </div>
   );
 }
