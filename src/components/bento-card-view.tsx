@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BentoCard, ThemeConfig } from "@/types/bento";
 import { cn } from "@/lib/utils";
 import { GithubIcon } from "@/components/icons";
@@ -13,6 +13,8 @@ import {
   GraduationCap,
   Briefcase,
   Code2,
+  GitBranch,
+  Users,
 } from "lucide-react";
 
 interface BentoCardViewProps {
@@ -23,6 +25,13 @@ interface BentoCardViewProps {
   onDelete?: (id: string) => void;
 }
 
+interface GithubStats {
+  repos: number;
+  followers: number;
+  bio?: string;
+  avatar?: string;
+}
+
 export function BentoCardView({
   card,
   theme,
@@ -30,6 +39,36 @@ export function BentoCardView({
   onEdit,
   onDelete,
 }: BentoCardViewProps) {
+  const [ghStats, setGhStats] = useState<GithubStats | null>(null);
+
+  useEffect(() => {
+    if (card.type === "github") {
+      let username = "Abcdeflahhh";
+      if (card.url) {
+        const parts = card.url.split("/").filter(Boolean);
+        if (parts.length > 0) {
+          username = parts[parts.length - 1];
+        }
+      }
+      fetch(`https://api.github.com/users/${username}`)
+        .then((res) => {
+          if (res.ok) return res.json();
+          throw new Error("Failed to fetch");
+        })
+        .then((data) => {
+          setGhStats({
+            repos: data.public_repos ?? 0,
+            followers: data.followers ?? 0,
+            bio: data.bio,
+            avatar: data.avatar_url,
+          });
+        })
+        .catch(() => {
+          // Gracefully fallback
+        });
+    }
+  }, [card.type, card.url]);
+
   const sizeClasses = {
     "1x1": "col-span-1 row-span-1 min-h-[170px]",
     "2x1": "col-span-1 sm:col-span-2 row-span-1 min-h-[170px]",
@@ -40,7 +79,7 @@ export function BentoCardView({
   const getCardIcon = () => {
     switch (card.type) {
       case "github":
-        return <GithubIcon className="w-5 h-5" />;
+        return <GithubIcon className="w-5 h-5 text-zinc-100" />;
       case "spotify":
         return <Music className="w-5 h-5 text-emerald-400" />;
       case "quote":
@@ -75,7 +114,10 @@ export function BentoCardView({
             {getCardIcon()}
           </div>
           {card.badge && (
-            <span className="text-[11px] font-medium tracking-wide uppercase px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10">
+            <span className="text-[11px] font-medium tracking-wide uppercase px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10 flex items-center gap-1.5">
+              {card.type === "github" && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              )}
               {card.badge}
             </span>
           )}
@@ -134,7 +176,28 @@ export function BentoCardView({
           </p>
         )}
 
-        {card.metrics && (
+        {/* Live GitHub Stats Metrics */}
+        {card.type === "github" && ghStats && (
+          <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-white/10">
+            <div className="flex items-center gap-2 p-2 rounded-xl bg-white/5">
+              <GitBranch className="w-4 h-4 text-purple-400" />
+              <div>
+                <p className="text-sm sm:text-base font-bold leading-none">{ghStats.repos}</p>
+                <p className={cn("text-[10px] mt-0.5", theme.textSecondary)}>Public Repos</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-2 rounded-xl bg-white/5">
+              <Users className="w-4 h-4 text-cyan-400" />
+              <div>
+                <p className="text-sm sm:text-base font-bold leading-none">{ghStats.followers}</p>
+                <p className={cn("text-[10px] mt-0.5", theme.textSecondary)}>Followers</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Standard Metrics */}
+        {card.metrics && card.type !== "github" && (
           <div className="mt-4 pt-3 border-t border-white/5 flex items-baseline gap-2">
             <span className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               {card.metrics.value}
@@ -146,7 +209,7 @@ export function BentoCardView({
         )}
       </div>
 
-      {/* Card Footer for specific card types */}
+      {/* Card Footer */}
       <div className="relative z-10 flex items-center justify-between text-xs pt-2">
         {card.type === "profile" && (
           <div className="flex items-center gap-2">
@@ -164,8 +227,8 @@ export function BentoCardView({
         )}
 
         {card.type === "github" && (
-          <span className="font-semibold text-xs tracking-wider opacity-90 flex items-center gap-1">
-            <Code2 className="w-3.5 h-3.5" /> Open Code
+          <span className="font-semibold text-xs tracking-wider opacity-90 flex items-center gap-1 text-emerald-400">
+            <Code2 className="w-3.5 h-3.5" /> Buka GitHub Profile
           </span>
         )}
       </div>

@@ -1,16 +1,16 @@
 import { BentoProfile } from "@/types/bento";
 
 export const INITIAL_PROFILE: BentoProfile = {
-  username: "aflah",
-  name: "Aflah",
-  headline: "Full-Stack Design Engineer & CS Undergrad",
+  username: "Abcdeflahhh",
+  name: "Aflah Athallah",
+  headline: "Full-Stack & Design Engineer (Semester 5 TI)",
   bio: "Mahasiswa Semester 5 Teknik Informatika. Suka membangun produk digital dengan perpaduan visual estetik, arsitektur kokoh, dan vibe coding AI.",
   avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
   location: "Indonesia",
   availableForHire: true,
   theme: "dark-minimal",
   socialLinks: {
-    github: "https://github.com",
+    github: "https://github.com/Abcdeflahhh",
     linkedin: "https://linkedin.com",
     twitter: "https://x.com",
     email: "aflah@example.com",
@@ -27,6 +27,16 @@ export const INITIAL_PROFILE: BentoProfile = {
       badge: "Open to Work",
     },
     {
+      id: "card-github-live",
+      type: "github",
+      size: "2x1",
+      title: "GitHub Live Stats",
+      subtitle: "@Abcdeflahhh",
+      description: "Data ditarik secara real-time via GitHub REST API.",
+      url: "https://github.com/Abcdeflahhh",
+      badge: "Live API",
+    },
+    {
       id: "card-project-1",
       type: "project",
       size: "2x1",
@@ -35,7 +45,7 @@ export const INITIAL_PROFILE: BentoProfile = {
       description:
         "Sistem visual grid interaktif dengan drag-and-drop dan AI copilot generator.",
       badge: "Featured Project",
-      url: "https://github.com",
+      url: "https://github.com/Abcdeflahhh/bentoflowaflah",
     },
     {
       id: "card-tech-stack",
@@ -57,16 +67,6 @@ export const INITIAL_PROFILE: BentoProfile = {
         label: "Proyek Selesai",
         value: "8+",
       },
-    },
-    {
-      id: "card-github",
-      type: "github",
-      size: "2x1",
-      title: "GitHub Repository",
-      subtitle: "Explore My Open Source Works",
-      description: "Kumpulan tugas kuliah, mini-project, dan eksperimen vibe coding.",
-      url: "https://github.com",
-      badge: "Active",
     },
     {
       id: "card-quote",
