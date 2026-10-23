@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { BentoProfile } from "@/types/bento";
-import { X, User, MapPin, Mail, Sparkles } from "lucide-react";
-import { GithubIcon, LinkedinIcon } from "./icons";
+import { X, User, MapPin, Mail, Sparkles, Globe } from "lucide-react";
+import { GithubIcon, LinkedinIcon, TwitterXIcon, InstagramIcon, GlobeIcon } from "./icons";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -26,6 +26,9 @@ export function ProfileModal({
   const [availableForHire, setAvailableForHire] = useState(profile.availableForHire);
   const [github, setGithub] = useState(profile.socialLinks.github || "");
   const [linkedin, setLinkedin] = useState(profile.socialLinks.linkedin || "");
+  const [twitter, setTwitter] = useState(profile.socialLinks.twitter || "");
+  const [instagram, setInstagram] = useState(profile.socialLinks.instagram || "");
+  const [website, setWebsite] = useState(profile.socialLinks.website || "");
   const [email, setEmail] = useState(profile.socialLinks.email || "");
 
   useEffect(() => {
@@ -38,6 +41,9 @@ export function ProfileModal({
       setAvailableForHire(profile.availableForHire);
       setGithub(profile.socialLinks.github || "");
       setLinkedin(profile.socialLinks.linkedin || "");
+      setTwitter(profile.socialLinks.twitter || "");
+      setInstagram(profile.socialLinks.instagram || "");
+      setWebsite(profile.socialLinks.website || "");
       setEmail(profile.socialLinks.email || "");
     }
   }, [isOpen, profile]);
@@ -56,6 +62,9 @@ export function ProfileModal({
       socialLinks: {
         github,
         linkedin,
+        twitter,
+        instagram,
+        website,
         email,
       },
     });
@@ -175,6 +184,45 @@ export function ProfileModal({
                 value={linkedin}
                 onChange={(e) => setLinkedin(e.target.value)}
                 placeholder="https://linkedin.com/in/username"
+                className="w-full px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1 flex items-center gap-1.5">
+                <InstagramIcon className="w-3.5 h-3.5" /> URL Instagram
+              </label>
+              <input
+                type="url"
+                value={instagram}
+                onChange={(e) => setInstagram(e.target.value)}
+                placeholder="https://instagram.com/username"
+                className="w-full px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1 flex items-center gap-1.5">
+                <TwitterXIcon className="w-3.5 h-3.5" /> URL Twitter / X
+              </label>
+              <input
+                type="url"
+                value={twitter}
+                onChange={(e) => setTwitter(e.target.value)}
+                placeholder="https://x.com/username"
+                className="w-full px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-zinc-400 mb-1 flex items-center gap-1.5">
+                <GlobeIcon className="w-3.5 h-3.5" /> Website Portofolio Pribadi
+              </label>
+              <input
+                type="url"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://bentoflowaflah.vercel.app"
                 className="w-full px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>

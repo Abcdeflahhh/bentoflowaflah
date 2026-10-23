@@ -13,6 +13,7 @@ interface SortableCardProps {
   theme: ThemeConfig;
   onEdit: (card: BentoCard) => void;
   onDelete: (id: string) => void;
+  onDuplicate?: (card: BentoCard) => void;
 }
 
 export function SortableCard({
@@ -20,6 +21,7 @@ export function SortableCard({
   theme,
   onEdit,
   onDelete,
+  onDuplicate,
 }: SortableCardProps) {
   const {
     attributes,
@@ -67,6 +69,7 @@ export function SortableCard({
         isEditable={true}
         onEdit={onEdit}
         onDelete={onDelete}
+        onDuplicate={onDuplicate}
       />
     </div>
   );

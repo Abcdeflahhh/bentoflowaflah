@@ -69,4 +69,5 @@ export interface ThemeConfig {
   textSecondary: string;
   accent: string;
   accentGlow: string;
+  bgHex: string;
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { BentoCard, CardSize, CardType } from "@/types/bento";
-import { X } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 
 interface CardModalProps {
   isOpen: boolean;
@@ -51,6 +51,52 @@ export function CardModal({
     }
   }, [initialCard, isOpen]);
 
+  const applyPreset = (presetType: CardType) => {
+    setType(presetType);
+    if (presetType === "project") {
+      setTitle("Portfolio Web App");
+      setSubtitle("Next.js & Tailwind CSS");
+      setDescription("Aplikasi web modern dengan performa tinggi dan desain interaktif.");
+      setBadge("Featured");
+      setSize("2x1");
+      setUrl("https://github.com");
+    } else if (presetType === "github") {
+      setTitle("GitHub Repository");
+      setSubtitle("Open Source");
+      setDescription("Koleksi kode sumber terbuka dan kontribusi komunitas.");
+      setBadge("Live API");
+      setSize("2x1");
+      setUrl("https://github.com/Abcdeflahhh");
+    } else if (presetType === "spotify") {
+      setTitle("Midnight City - M83");
+      setSubtitle("Favorit Saat Ngoding");
+      setDescription("Lagu synthwave penambah fokus saat menulis kode malam hari.");
+      setBadge("Spotify");
+      setSize("1x1");
+      setUrl("https://open.spotify.com");
+    } else if (presetType === "stats") {
+      setTitle("Pendidikan & Prestasi");
+      setSubtitle("S1 Teknik Informatika");
+      setDescription("Fokus bidang Software Engineering dan Cloud Computing.");
+      setBadge("Akademik");
+      setSize("1x1");
+      setMetricValue("3.85");
+      setMetricLabel("IPK Kumulatif");
+    } else if (presetType === "quote") {
+      setTitle("Kata Mutiara");
+      setSubtitle("Steve Jobs");
+      setDescription('"Stay hungry, stay foolish."');
+      setBadge("Inspirasi");
+      setSize("1x1");
+    } else if (presetType === "map") {
+      setTitle("Domisili & Lokasi");
+      setSubtitle("Cikarang, Bekasi");
+      setDescription("Siap untuk kerja remote (WFA) maupun hybrid di Jabodetabek.");
+      setBadge("Jawa Barat");
+      setSize("1x1");
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -91,7 +137,61 @@ export function CardModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        {/* Preset Templates (Only when creating new card) */}
+        {!initialCard && (
+          <div className="mt-4 p-3 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+            <span className="text-xs font-medium text-zinc-400 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+              Template Cepat:
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => applyPreset("project")}
+                className="px-2.5 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 transition-colors"
+              >
+                + Proyek
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset("github")}
+                className="px-2.5 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20 text-zinc-200 transition-colors"
+              >
+                + GitHub
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset("spotify")}
+                className="px-2.5 py-1 text-xs rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 transition-colors"
+              >
+                + Spotify
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset("stats")}
+                className="px-2.5 py-1 text-xs rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 transition-colors"
+              >
+                + Nilai / IPK
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset("quote")}
+                className="px-2.5 py-1 text-xs rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 transition-colors"
+              >
+                + Quotes
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPreset("map")}
+                className="px-2.5 py-1 text-xs rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 transition-colors"
+              >
+                + Lokasi
+              </button>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-zinc-400 mb-1">
@@ -103,11 +203,13 @@ export function CardModal({
                 className="w-full px-3 py-2 text-sm bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="project" className="bg-zinc-900">Project Showcase</option>
-                <option value="github" className="bg-zinc-900">GitHub Repo</option>
+                <option value="github" className="bg-zinc-900">GitHub Repo & Live Stats</option>
                 <option value="stats" className="bg-zinc-900">Statistik / Nilai</option>
                 <option value="quote" className="bg-zinc-900">Quotes / Filosofi</option>
-                <option value="spotify" className="bg-zinc-900">Lagu / Music</option>
-                <option value="link" className="bg-zinc-900">Link Kustom</option>
+                <option value="spotify" className="bg-zinc-900">Lagu / Spotify Music</option>
+                <option value="map" className="bg-zinc-900">Peta / Lokasi</option>
+                <option value="social" className="bg-zinc-900">Media Sosial</option>
+                <option value="link" className="bg-zinc-900">Link Web Kustom</option>
               </select>
             </div>
 

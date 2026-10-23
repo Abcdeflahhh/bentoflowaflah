@@ -14,9 +14,11 @@ export function AICopilotBar({ onApplyAIChanges }: AICopilotBarProps) {
   const [suggestionActive, setSuggestionActive] = useState(false);
 
   const quickPrompts = [
-    "Mahasiswa TI Semester 5 fokus Backend & DB",
-    "Frontend & Design Engineer dengan gaya Cyberpunk",
-    "Mobile Flutter Developer dengan tema Warm Minimalist",
+    "Mahasiswa TI Semester 5 fokus Backend Go & DB",
+    "Frontend & UI Engineer dengan tema Cyber Neon",
+    "AI & Data Science Engineer tema Midnight Violet",
+    "Mobile Flutter Developer dengan tema Warm Amber",
+    "Clean Minimalist Portfolio Builder",
   ];
 
   const handleGenerate = async (targetPrompt?: string) => {
@@ -32,23 +34,66 @@ export function AICopilotBar({ onApplyAIChanges }: AICopilotBarProps) {
     let theme: ThemeId = "dark-minimal";
     let headline = "Software Engineer & Builder";
     let bio = "Membangun sistem scalable dengan teknologi web mutakhir.";
+    let projectTitle = "Interactive SaaS Experience";
+    let projectDesc = "Dibangun dengan arsitektur modern, state management bersih, dan performa tinggi.";
+    let statTitle = "Focus Area";
+    let statDesc = "Next.js, TypeScript, Tailwind";
+    let statMetric = { label: "Readiness", value: "100%" };
 
     if (lower.includes("cyber") || lower.includes("cyberpunk") || lower.includes("neon")) {
       theme = "cyberpunk";
       headline = "Full-Stack Cyber Engineer";
-      bio = "Merancang antarmuka berkecepatan tinggi, clean architecture, dan sistem real-time.";
-    } else if (lower.includes("warm") || lower.includes("retro") || lower.includes("desain")) {
+      bio = "Merancang antarmuka berkecepatan tinggi, high-throughput microservices, dan sistem real-time.";
+      projectTitle = "Neural Mesh Dashboard & Telemetry";
+      projectDesc = "Real-time analytics engine dengan WebSockets, Next.js Turbopack, dan visualisasi canvas.";
+      statTitle = "Cyber Stack";
+      statDesc = "TypeScript, Rust, WebGL";
+      statMetric = { label: "Performance Score", value: "99" };
+    } else if (lower.includes("warm") || lower.includes("retro") || lower.includes("amber")) {
       theme = "retro-warm";
       headline = "Creative Technologist & UI Engineer";
       bio = "Menghubungkan estetika visual yang hangat dengan performa kode tanpa kompromi.";
+      projectTitle = "Editorial Craft & CMS Studio";
+      projectDesc = "Desain tipografi berbasis grid Swiss, transisi mikro halus, dan render statis optimal.";
+      statTitle = "Design System";
+      statDesc = "Figma, Tailwind, Framer";
+      statMetric = { label: "Aesthetic Index", value: "10/10" };
     } else if (lower.includes("mobile") || lower.includes("flutter")) {
       theme = "midnight-violet";
       headline = "Mobile Application Specialist";
       bio = "Membangun aplikasi multiplatform Flutter yang responsif, fluid, dan offline-first.";
-    } else if (lower.includes("backend") || lower.includes("database")) {
+      projectTitle = "Smart Habit & Cashflow Mobile App";
+      projectDesc = "Aplikasi keuangan pribadi dengan integrasi SQLite lokal dan sinkronisasi cloud real-time.";
+      statTitle = "Mobile Stack";
+      statDesc = "Flutter, Dart, Riverpod, Firebase";
+      statMetric = { label: "Active Users", value: "5K+" };
+    } else if (lower.includes("backend") || lower.includes("database") || lower.includes("db") || lower.includes("go")) {
       theme = "dark-minimal";
       headline = "Backend & Systems Architect (Sem 5)";
       bio = "Fokus pada RESTful API, PostgreSQL query optimization, dan microservice resilience.";
+      projectTitle = "Distributed Booking & Queue API";
+      projectDesc = "High-concurrency ticket reservation engine menggunakan Redis pub/sub dan PostgreSQL transactions.";
+      statTitle = "Backend Stack";
+      statDesc = "Go, PostgreSQL, Redis, Docker";
+      statMetric = { label: "TPS Capacity", value: "10K" };
+    } else if (lower.includes("ai") || lower.includes("data") || lower.includes("ml") || lower.includes("machine learning")) {
+      theme = "midnight-violet";
+      headline = "AI & Machine Learning Engineer";
+      bio = "Mengeksplorasi LLM agentic workflow, pipeline RAG, dan model NLP untuk otomasi cerdas.";
+      projectTitle = "Autonomous RAG Knowledge Agent";
+      projectDesc = "Sistem pencarian semantik cerdas berbasis vektor embedding dan reasoning LLM adaptif.";
+      statTitle = "AI Drivers";
+      statDesc = "Python, PyTorch, LangChain, Pinecone";
+      statMetric = { label: "Benchmark Acc", value: "96.4%" };
+    } else if (lower.includes("clean") || lower.includes("light")) {
+      theme = "clean-light";
+      headline = "Product Designer & Frontend Architect";
+      bio = "Menyederhanakan pengalaman digital yang kompleks menjadi alur bento yang intuitif dan minimalis.";
+      projectTitle = "Minimalist Design System Kit";
+      projectDesc = "Komponen UI modular berstandar WCAG AAA dengan kontras tajam dan arsitektur rapi.";
+      statTitle = "Design Metrics";
+      statDesc = "React 19, Accessibility, Tailwind";
+      statMetric = { label: "Accessibility", value: "100%" };
     }
 
     const generatedCards: BentoCard[] = [
@@ -56,28 +101,19 @@ export function AICopilotBar({ onApplyAIChanges }: AICopilotBarProps) {
         id: `ai-card-${Date.now()}-1`,
         type: "project",
         size: "2x1",
-        title: lower.includes("backend")
-          ? "Distributed Booking & Queue API"
-          : lower.includes("mobile")
-          ? "Smart Habit & Cashflow Mobile App"
-          : "Interactive SaaS Experience",
+        title: projectTitle,
         subtitle: "Generated by BentoFlow AI",
-        description: "Dibangun dengan arsitektur modern, state management bersih, dan performa tinggi.",
+        description: projectDesc,
         badge: "AI Suggested",
       },
       {
         id: `ai-card-${Date.now()}-2`,
         type: "stats",
         size: "1x1",
-        title: "Focus Area",
-        subtitle: "Target Magang",
-        description: lower.includes("backend")
-          ? "Go, Postgres, Docker"
-          : "Next.js, Tailwind, Framer",
-        metrics: {
-          label: "Readiness",
-          value: "100%",
-        },
+        title: statTitle,
+        subtitle: "Focus",
+        description: statDesc,
+        metrics: statMetric,
       },
     ];
 

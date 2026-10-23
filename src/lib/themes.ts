@@ -11,6 +11,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     textSecondary: "text-zinc-400",
     accent: "bg-zinc-100 text-zinc-900 hover:bg-zinc-200",
     accentGlow: "shadow-[0_0_20px_rgba(255,255,255,0.06)]",
+    bgHex: "#09090b",
   },
   "midnight-violet": {
     id: "midnight-violet",
@@ -22,6 +23,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     textSecondary: "text-purple-300/70",
     accent: "bg-purple-600 text-white hover:bg-purple-500",
     accentGlow: "shadow-[0_0_25px_rgba(168,85,247,0.18)]",
+    bgHex: "#0b0a16",
   },
   cyberpunk: {
     id: "cyberpunk",
@@ -33,6 +35,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     textSecondary: "text-cyan-400/70",
     accent: "bg-cyan-400 text-black hover:bg-cyan-300 font-semibold",
     accentGlow: "shadow-[0_0_25px_rgba(6,182,212,0.25)]",
+    bgHex: "#05080f",
   },
   "retro-warm": {
     id: "retro-warm",
@@ -44,6 +47,7 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     textSecondary: "text-amber-300/70",
     accent: "bg-amber-500 text-stone-950 hover:bg-amber-400 font-semibold",
     accentGlow: "shadow-[0_0_25px_rgba(245,158,11,0.18)]",
+    bgHex: "#14120e",
   },
   "clean-light": {
     id: "clean-light",
@@ -55,5 +59,6 @@ export const THEMES: Record<ThemeId, ThemeConfig> = {
     textSecondary: "text-slate-500",
     accent: "bg-slate-900 text-white hover:bg-slate-800",
     accentGlow: "shadow-[0_4px_20px_rgba(0,0,0,0.06)]",
+    bgHex: "#f8fafc",
   },
 };

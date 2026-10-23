@@ -26,7 +26,13 @@ import { BentoCardView } from "@/components/bento-card-view";
 import { CardModal } from "@/components/card-modal";
 import { ProfileModal } from "@/components/profile-modal";
 import { AICopilotBar } from "@/components/ai-copilot-bar";
-import { GithubIcon, LinkedinIcon } from "@/components/icons";
+import {
+  GithubIcon,
+  LinkedinIcon,
+  TwitterXIcon,
+  InstagramIcon,
+  GlobeIcon,
+} from "@/components/icons";
 
 import {
   Plus,
@@ -42,6 +48,8 @@ import {
   RotateCcw,
   User,
   Loader2,
+  FileDown,
+  FileUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,8 +64,17 @@ export default function BentoFlowPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === msg ? null : prev));
+    }, 2800);
+  };
 
   // Load from LocalStorage on mount
   useEffect(() => {
@@ -125,6 +142,7 @@ export default function BentoFlowPage() {
         cards: [card, ...prev.cards],
       };
     });
+    showToast("Kartu berhasil disimpan!");
   };
 
   const handleDeleteCard = (id: string) => {
@@ -132,6 +150,26 @@ export default function BentoFlowPage() {
       ...prev,
       cards: prev.cards.filter((c) => c.id !== id),
     }));
+    showToast("Kartu telah dihapus.");
+  };
+
+  const handleDuplicateCard = (card: BentoCard) => {
+    const duplicated: BentoCard = {
+      ...card,
+      id: `card-${Date.now()}`,
+      title: `${card.title} (Salinan)`,
+    };
+    setProfile((prev) => {
+      const index = prev.cards.findIndex((c) => c.id === card.id);
+      const newCards = [...prev.cards];
+      if (index !== -1) {
+        newCards.splice(index + 1, 0, duplicated);
+      } else {
+        newCards.push(duplicated);
+      }
+      return { ...prev, cards: newCards };
+    });
+    showToast("Kartu berhasil diduplikasi!");
   };
 
   const handleApplyAI = (data: Partial<BentoProfile> & { newCards?: BentoCard[] }) => {
@@ -142,6 +180,7 @@ export default function BentoFlowPage() {
       bio: data.bio || prev.bio,
       cards: data.newCards ? [...data.newCards, ...prev.cards] : prev.cards,
     }));
+    showToast("Vibe & layout berhasil digenerate oleh AI!");
   };
 
   const handleUpdateProfile = (updated: Partial<BentoProfile>) => {
@@ -153,13 +192,55 @@ export default function BentoFlowPage() {
         ...(updated.socialLinks || {}),
       },
     }));
+    showToast("Profil berhasil diperbarui!");
   };
 
   const handleResetToDefault = () => {
     if (confirm("Kembalikan seluruh data dan kartu ke setelan bawaan awal?")) {
       setProfile(INITIAL_PROFILE);
       localStorage.removeItem(STORAGE_KEY);
+      showToast("Data dikembalikan ke setelan awal.");
     }
+  };
+
+  const handleExportJSON = () => {
+    try {
+      const jsonStr = JSON.stringify(profile, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = `bentoflow-${profile.username || "config"}.json`;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+      showToast("Konfigurasi profil berhasil diekspor sebagai JSON!");
+    } catch (err) {
+      console.error("JSON export error:", err);
+      alert("Gagal mengekspor data JSON.");
+    }
+  };
+
+  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content) as BentoProfile;
+        if (parsed && parsed.name && Array.isArray(parsed.cards)) {
+          setProfile(parsed);
+          showToast("Konfigurasi profil berhasil dimuat!");
+        } else {
+          alert("Format file JSON tidak valid.");
+        }
+      } catch (err) {
+        console.error("JSON parse error:", err);
+        alert("Gagal membaca file JSON.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   };
 
   const handleExportImage = async () => {
@@ -169,12 +250,13 @@ export default function BentoFlowPage() {
       const dataUrl = await toPng(canvasRef.current, {
         cacheBust: true,
         quality: 0.95,
-        backgroundColor: "#09090b",
+        backgroundColor: currentTheme.bgHex || "#09090b",
       });
       const link = document.createElement("a");
       link.download = `bentoflow-${profile.username || "portfolio"}.png`;
       link.href = dataUrl;
       link.click();
+      showToast("Gambar Bento Grid berhasil diunduh!");
     } catch (err) {
       console.error("Export error:", err);
       alert("Gagal mengunduh gambar. Silakan coba lagi.");
@@ -187,6 +269,7 @@ export default function BentoFlowPage() {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
       setCopiedLink(true);
+      showToast("Tautan portofolio disalin ke clipboard!");
       setTimeout(() => setCopiedLink(false), 2000);
     }
   };
@@ -302,16 +385,46 @@ export default function BentoFlowPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json,application/json"
+                  onChange={handleImportJSON}
+                  className="hidden"
+                />
+
                 <button
+                  type="button"
+                  onClick={handleExportJSON}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-colors border border-white/10"
+                  title="Ekspor data portofolio sebagai file JSON"
+                >
+                  <FileDown className="w-4 h-4 text-cyan-400" />
+                  <span className="hidden md:inline">Ekspor JSON</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-zinc-300 hover:text-white transition-colors border border-white/10"
+                  title="Impor data portofolio dari file JSON"
+                >
+                  <FileUp className="w-4 h-4 text-purple-400" />
+                  <span className="hidden md:inline">Impor JSON</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={handleResetToDefault}
-                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-xs transition-colors"
+                  className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-xs transition-colors border border-white/10"
                   title="Reset ke setelan bawaan"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => setIsProfileModalOpen(true)}
                   className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs sm:text-sm font-semibold transition-all border border-white/10"
                 >
@@ -320,6 +433,7 @@ export default function BentoFlowPage() {
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setEditingCard(null);
                     setIsModalOpen(true);
@@ -345,6 +459,11 @@ export default function BentoFlowPage() {
                 <img
                   src={profile.avatarUrl}
                   alt={profile.name}
+                  onError={(e) => {
+                    e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      profile.name
+                    )}&background=6366f1&color=fff&bold=true`;
+                  }}
                   className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-white/20"
                 />
               </div>
@@ -375,7 +494,7 @@ export default function BentoFlowPage() {
                 <div className="flex items-center gap-4 pt-2 text-xs text-zinc-400 flex-wrap">
                   {profile.location && (
                     <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5" />
+                      <MapPin className="w-3.5 h-3.5 text-rose-400" />
                       {profile.location}
                     </span>
                   )}
@@ -396,7 +515,37 @@ export default function BentoFlowPage() {
                       rel="noreferrer"
                       className="hover:text-white flex items-center gap-1 transition-colors"
                     >
-                      <LinkedinIcon className="w-3.5 h-3.5" /> LinkedIn
+                      <LinkedinIcon className="w-3.5 h-3.5 text-blue-400" /> LinkedIn
+                    </a>
+                  )}
+                  {profile.socialLinks.instagram && (
+                    <a
+                      href={profile.socialLinks.instagram}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-white flex items-center gap-1 transition-colors"
+                    >
+                      <InstagramIcon className="w-3.5 h-3.5 text-pink-400" /> Instagram
+                    </a>
+                  )}
+                  {profile.socialLinks.twitter && (
+                    <a
+                      href={profile.socialLinks.twitter}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-white flex items-center gap-1 transition-colors"
+                    >
+                      <TwitterXIcon className="w-3.5 h-3.5" /> Twitter
+                    </a>
+                  )}
+                  {profile.socialLinks.website && (
+                    <a
+                      href={profile.socialLinks.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-white flex items-center gap-1 transition-colors"
+                    >
+                      <GlobeIcon className="w-3.5 h-3.5 text-cyan-400" /> Portofolio
                     </a>
                   )}
                   {profile.socialLinks.email && (
@@ -404,7 +553,7 @@ export default function BentoFlowPage() {
                       href={`mailto:${profile.socialLinks.email}`}
                       className="hover:text-white flex items-center gap-1 transition-colors"
                     >
-                      <Mail className="w-3.5 h-3.5" /> Email
+                      <Mail className="w-3.5 h-3.5 text-amber-400" /> Email
                     </a>
                   )}
                 </div>
@@ -435,6 +584,7 @@ export default function BentoFlowPage() {
                           setIsModalOpen(true);
                         }}
                         onDelete={handleDeleteCard}
+                        onDuplicate={handleDuplicateCard}
                       />
                     ))}
                   </div>
@@ -455,6 +605,36 @@ export default function BentoFlowPage() {
           </section>
         </div>
       </main>
+
+      {/* Floating Pill when in Preview Mode */}
+      {!isEditorMode && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-full bg-black/85 backdrop-blur-xl border border-white/20 shadow-2xl text-xs sm:text-sm text-zinc-200">
+            <span className="flex items-center gap-1.5 text-zinc-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Mode Preview Publik
+            </span>
+            <div className="w-px h-4 bg-white/20" />
+            <button
+              onClick={() => setIsEditorMode(true)}
+              className="flex items-center gap-1.5 font-semibold text-white hover:text-purple-300 transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-yellow-400" />
+              Kembali ke Mode Edit
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900/95 border border-white/15 text-zinc-100 text-xs sm:text-sm shadow-2xl backdrop-blur-md">
+            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{toastMessage}</span>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="mt-16 py-8 border-t border-white/10 text-center text-xs text-zinc-500 space-y-2">

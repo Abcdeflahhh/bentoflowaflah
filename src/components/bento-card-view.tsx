@@ -3,11 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { BentoCard, ThemeConfig } from "@/types/bento";
 import { cn } from "@/lib/utils";
-import { GithubIcon } from "@/components/icons";
+import { GithubIcon, SpotifyIcon } from "@/components/icons";
 import {
   ExternalLink,
   Sparkles,
-  Music,
   Quote,
   Layers,
   GraduationCap,
@@ -15,6 +14,9 @@ import {
   Code2,
   GitBranch,
   Users,
+  MapPin,
+  Share2,
+  Globe,
 } from "lucide-react";
 
 interface BentoCardViewProps {
@@ -23,6 +25,7 @@ interface BentoCardViewProps {
   isEditable?: boolean;
   onEdit?: (card: BentoCard) => void;
   onDelete?: (id: string) => void;
+  onDuplicate?: (card: BentoCard) => void;
 }
 
 interface GithubStats {
@@ -38,6 +41,7 @@ export function BentoCardView({
   isEditable = false,
   onEdit,
   onDelete,
+  onDuplicate,
 }: BentoCardViewProps) {
   const [ghStats, setGhStats] = useState<GithubStats | null>(null);
 
@@ -81,7 +85,7 @@ export function BentoCardView({
       case "github":
         return <GithubIcon className="w-5 h-5 text-zinc-100" />;
       case "spotify":
-        return <Music className="w-5 h-5 text-emerald-400" />;
+        return <SpotifyIcon className="w-5 h-5 text-emerald-400" />;
       case "quote":
         return <Quote className="w-5 h-5 text-amber-400" />;
       case "project":
@@ -90,6 +94,12 @@ export function BentoCardView({
         return <GraduationCap className="w-5 h-5 text-blue-400" />;
       case "profile":
         return <Sparkles className="w-5 h-5 text-yellow-400" />;
+      case "map":
+        return <MapPin className="w-5 h-5 text-rose-400" />;
+      case "social":
+        return <Share2 className="w-5 h-5 text-purple-400" />;
+      case "link":
+        return <Globe className="w-5 h-5 text-cyan-400" />;
       default:
         return <Layers className="w-5 h-5" />;
     }
@@ -131,26 +141,41 @@ export function BentoCardView({
 
         {isEditable && (
           <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100">
+            {onDuplicate && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDuplicate(card);
+                }}
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs transition-colors"
+                title="Duplikat kartu"
+              >
+                Duplikat
+              </button>
+            )}
             {onEdit && (
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit(card);
                 }}
                 className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs transition-colors"
-                title="Edit card"
+                title="Edit kartu"
               >
                 Edit
               </button>
             )}
             {onDelete && (
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete(card.id);
                 }}
                 className="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/40 text-red-300 text-xs transition-colors"
-                title="Hapus card"
+                title="Hapus kartu"
               >
                 Hapus
               </button>
@@ -229,6 +254,39 @@ export function BentoCardView({
         {card.type === "github" && (
           <span className="font-semibold text-xs tracking-wider opacity-90 flex items-center gap-1 text-emerald-400">
             <Code2 className="w-3.5 h-3.5" /> Buka GitHub Profile
+          </span>
+        )}
+
+        {card.type === "spotify" && (
+          <div className="flex items-center gap-2 text-emerald-400 font-medium text-xs">
+            <div className="flex items-end gap-0.5 h-3.5">
+              <span className="w-1 h-2 bg-emerald-400 rounded-full animate-pulse" />
+              <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce" />
+              <span className="w-1 h-2.5 bg-emerald-400 rounded-full animate-pulse" />
+            </div>
+            <span>On Repeat • Spotify</span>
+          </div>
+        )}
+
+        {card.type === "quote" && (
+          <span className={cn("text-[11px] italic font-serif", theme.textSecondary)}>
+            Daily Inspiration
+          </span>
+        )}
+
+        {card.type === "map" && (
+          <div className="flex items-center gap-1.5 text-rose-400 font-medium">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+            </span>
+            <span>Live Location</span>
+          </div>
+        )}
+
+        {(card.type === "link" || card.type === "social") && card.url && (
+          <span className="font-medium text-xs opacity-90 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            Buka Tautan &rarr;
           </span>
         )}
       </div>
