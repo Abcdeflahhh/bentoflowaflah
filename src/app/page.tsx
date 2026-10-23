@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const STORAGE_KEY = "bentoflow_profile_v1";
+const STORAGE_KEY = "bentoflow_profile_v2";
 
 export default function BentoFlowPage() {
   const [profile, setProfile] = useState<BentoProfile>(INITIAL_PROFILE);
